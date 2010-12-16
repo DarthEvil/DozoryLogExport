@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLogExport", "DLogExport\DLogExport.csproj", "{68518A0B-8740-4674-95DF-0A671EF28C42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68518A0B-8740-4674-95DF-0A671EF28C42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68518A0B-8740-4674-95DF-0A671EF28C42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68518A0B-8740-4674-95DF-0A671EF28C42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68518A0B-8740-4674-95DF-0A671EF28C42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
