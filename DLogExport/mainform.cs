@@ -27,7 +27,7 @@ namespace DLogExport
             OrgAuth auth = null;
             int sources = 0;
 
-            if (!bgw.IsBusy){
+            if (!bgw_download.IsBusy && !bgw_report.IsBusy){
                 //Начинаем импорт
                 try
                 {
@@ -77,7 +77,7 @@ namespace DLogExport
                     //gb_control.Enabled = false;
 
                     progress.Value = 0;
-                    bgw.RunWorkerAsync(new Reqest(begin, end, storages, treasures, auth));
+                    bgw_download.RunWorkerAsync(new Reqest(begin, end, storages, treasures, auth));
                     btn_import.Text = "Прервать импорт";
                 }
                 catch (Exception exception){
@@ -86,12 +86,15 @@ namespace DLogExport
             }else{
                 //отменяем импорт
                 if (MessageBox.Show("Прервать импорт данных?", "Необходимо подтверждение", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK){
-                    bgw.CancelAsync();
+                    if (bgw_download.IsBusy){
+                        bgw_download.CancelAsync(); 
+                    }
+                    if (bgw_download.IsBusy){
+                        bgw_download.CancelAsync();
+                    }
                     btn_import.Text = "Начать импорт";
                 }
             }
-            
-            //Загрузка: Профессиональный - 21.11.2010
         }
 
         private void ChAllStorageCheckedChanged(object sender, EventArgs e)
@@ -181,28 +184,32 @@ namespace DLogExport
                         now = parameters.BeginTime;
                         int days = (int)(parameters.EndTime.Date - now.Date).TotalDays;
                         if (days == 0) days = 1;
-                        Parallel.For(0, days, i =>
+                        //Parallel.For(0, days, i =>
+                        //        {
+                        for (int i = 0; i < days; i++)
+                        {
+                            try
+                            {
+                                result.AddStorageDay(type,
+                                                    DozoryApi.GetStorageDay(
+                                                        parameters.Org, now, type));
+                            }
+                            catch (Exception exception)
+                            {
+                                if (exception.Message != "Нет данных")
                                 {
-                                    try
-                                    {
-                                        result.AddStorageDay(type,
-                                                            DozoryApi.GetStorageDay(
-                                                                parameters.Org, now, type));
-                                    }
-                                    catch (Exception exception)
-                                    {
-                                        if (exception.Message != "Нет данных")
-                                        {
-                                            throw;
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        bgw.ReportProgress(0);
-                                        now = now.AddDays(1);
-                                    }
+                                    EnableInterface();
+                                    throw;
                                 }
-                            );
+                            }
+                            finally
+                            {
+                                bgw_download.ReportProgress(0);
+                                now = now.AddDays(1);
+                            }
+                        }
+                            //    }
+                            //);
                     }
                 );
 
@@ -211,28 +218,32 @@ namespace DLogExport
                         now = parameters.BeginTime;
                         int days = (int)(parameters.EndTime.Date - now.Date).TotalDays;
                         if (days == 0) days = 1;
-                        Parallel.For(0, days, i =>
+                        //Parallel.For(0, days, i =>
+                        //        {
+                        for (int i = 0; i < days; i++)
+                        {
+                            try
+                            {
+                                result.AddTreasureDay(type,
+                                                        DozoryApi.GetTreasureDay(
+                                                            parameters.Org, now, type));
+                            }
+                            catch (Exception exception)
+                            {
+                                if (exception.Message != "Нет данных")
                                 {
-                                    try
-                                    {
-                                        result.AddTreasureDay(type,
-                                                                DozoryApi.GetTreasureDay(
-                                                                    parameters.Org, now, type));
-                                    }
-                                    catch (Exception exception)
-                                    {
-                                        if (exception.Message != "Нет данных")
-                                        {
-                                            throw;
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        bgw.ReportProgress(0);
-                                        now = now.AddDays(1);
-                                    }
+                                    EnableInterface();
+                                    throw;
                                 }
-                            );
+                            }
+                            finally
+                            {
+                                bgw_download.ReportProgress(0);
+                                now = now.AddDays(1);
+                            }
+                            //    }
+                            //);
+                        }
                     }
                 );
             e.Result = result;
@@ -247,6 +258,7 @@ namespace DLogExport
             else if (e.Cancelled){
                 //Остановили сами
                 MessageBox.Show("Импорт данных прекращен", "Операция прервана", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                EnableInterface();
             }
             else
             {
@@ -254,28 +266,29 @@ namespace DLogExport
                 {
                     //Тут у нас нормальное завершение
                     progress.Value = progress.Maximum;
-
-                    //И создаем отчет
-                    Responce result = (Responce) e.Result;
-
-                    ReportGenerator report = new ReportGenerator();
-                    string filename = Application.StartupPath+"\\Отчеты\\" + DateTime.Now.Ticks + ".xlsx";
-                    report.Generate(filename, result);
-                    //Directory.Delete("Отчеты\\xl",true);
-                    //Directory.Delete("Отчеты\\docProps", true);
-                    Process.Start(filename);
-                    progress.Value = 0;
+                    bgw_report.RunWorkerAsync((Responce)e.Result);
                 }
                 catch(Exception exc)
                 {
                     MessageBox.Show(this, exc.Message, "Ошибка!", MessageBoxButtons.OK);
+                    EnableInterface();
                 }
             }
+        }
 
-            //Возвращаем рожу к стартовому состоянию
-            
+        private void BgwProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progress.Value++;
+        }
 
+        /// <summary>
+        /// Разблокировка интерфейса
+        /// </summary>
+        private void EnableInterface()
+        {
             btn_import.Text = "Начать импорт";
+            lb_createreport.Visible = false;
+            progress.Value = 0;
             //Включаем контролы
             gb_org.Enabled = true;
             gb_dates.Enabled = true;
@@ -283,9 +296,28 @@ namespace DLogExport
             gb_control.Enabled = true;
         }
 
-        private void BgwProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void bgw_report_DoWork(object sender, DoWorkEventArgs e)
         {
-            progress.Value++;
+              Responce result = (Responce) e.Argument;
+              lb_createreport.Visible = true;
+              ReportGenerator report = new ReportGenerator();
+              string filename = Application.StartupPath+"\\Отчеты\\" + DateTime.Now.Ticks + ".xlsx";
+              report.Generate(filename, result);
+              e.Result = filename;
+        }
+
+        private void bgw_report_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null){
+                //Выпали по ошибке
+                MessageBox.Show(e.Error.Message, "Операция прервана", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                string filename = (string)e.Result;
+                Process.Start(filename);
+            }
+            EnableInterface();
         }
     }
 }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainform));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.progress = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -58,7 +59,10 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.gb_control = new System.Windows.Forms.GroupBox();
             this.btn_import = new System.Windows.Forms.Button();
-            this.bgw = new System.ComponentModel.BackgroundWorker();
+            this.bgw_download = new System.ComponentModel.BackgroundWorker();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lb_createreport = new System.Windows.Forms.ToolStripStatusLabel();
+            this.bgw_report = new System.ComponentModel.BackgroundWorker();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.gb_org.SuspendLayout();
@@ -76,7 +80,9 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.progress,
             this.toolStripStatusLabel1,
-            this.lb_progress_text});
+            this.lb_progress_text,
+            this.toolStripStatusLabel2,
+            this.lb_createreport});
             this.statusStrip1.Location = new System.Drawing.Point(0, 439);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
@@ -250,7 +256,7 @@
             this.ch_treasure_taler.AutoSize = true;
             this.ch_treasure_taler.Location = new System.Drawing.Point(247, 84);
             this.ch_treasure_taler.Name = "ch_treasure_taler";
-            this.ch_treasure_taler.Size = new System.Drawing.Size(77, 20);
+            this.ch_treasure_taler.Size = new System.Drawing.Size(65, 17);
             this.ch_treasure_taler.TabIndex = 9;
             this.ch_treasure_taler.Text = "Талеры";
             this.ch_treasure_taler.UseVisualStyleBackColor = true;
@@ -261,7 +267,7 @@
             this.ch_treasure_money.AutoSize = true;
             this.ch_treasure_money.Location = new System.Drawing.Point(247, 58);
             this.ch_treasure_money.Name = "ch_treasure_money";
-            this.ch_treasure_money.Size = new System.Drawing.Size(68, 20);
+            this.ch_treasure_money.Size = new System.Drawing.Size(56, 17);
             this.ch_treasure_money.TabIndex = 8;
             this.ch_treasure_money.Text = "Рубли";
             this.ch_treasure_money.UseVisualStyleBackColor = true;
@@ -272,7 +278,7 @@
             this.ch_all_treasure.AutoSize = true;
             this.ch_all_treasure.Location = new System.Drawing.Point(226, 28);
             this.ch_all_treasure.Name = "ch_all_treasure";
-            this.ch_all_treasure.Size = new System.Drawing.Size(67, 20);
+            this.ch_all_treasure.Size = new System.Drawing.Size(57, 17);
             this.ch_all_treasure.TabIndex = 7;
             this.ch_all_treasure.Text = "Казна";
             this.ch_all_treasure.UseVisualStyleBackColor = true;
@@ -293,7 +299,7 @@
             this.ch_storage_lib.AutoSize = true;
             this.ch_storage_lib.Location = new System.Drawing.Point(39, 162);
             this.ch_storage_lib.Name = "ch_storage_lib";
-            this.ch_storage_lib.Size = new System.Drawing.Size(106, 20);
+            this.ch_storage_lib.Size = new System.Drawing.Size(86, 17);
             this.ch_storage_lib.TabIndex = 5;
             this.ch_storage_lib.Text = "Библиотека";
             this.ch_storage_lib.UseVisualStyleBackColor = true;
@@ -304,7 +310,7 @@
             this.ch_storage_prof.AutoSize = true;
             this.ch_storage_prof.Location = new System.Drawing.Point(39, 136);
             this.ch_storage_prof.Name = "ch_storage_prof";
-            this.ch_storage_prof.Size = new System.Drawing.Size(158, 20);
+            this.ch_storage_prof.Size = new System.Drawing.Size(128, 17);
             this.ch_storage_prof.TabIndex = 4;
             this.ch_storage_prof.Text = "Профессиональный";
             this.ch_storage_prof.UseVisualStyleBackColor = true;
@@ -315,7 +321,7 @@
             this.ch_storage_mods.AutoSize = true;
             this.ch_storage_mods.Location = new System.Drawing.Point(39, 110);
             this.ch_storage_mods.Name = "ch_storage_mods";
-            this.ch_storage_mods.Size = new System.Drawing.Size(128, 20);
+            this.ch_storage_mods.Size = new System.Drawing.Size(104, 17);
             this.ch_storage_mods.TabIndex = 3;
             this.ch_storage_mods.Text = "Модификаторы";
             this.ch_storage_mods.UseVisualStyleBackColor = true;
@@ -326,7 +332,7 @@
             this.ch_storage_second.AutoSize = true;
             this.ch_storage_second.Location = new System.Drawing.Point(39, 84);
             this.ch_storage_second.Name = "ch_storage_second";
-            this.ch_storage_second.Size = new System.Drawing.Size(139, 20);
+            this.ch_storage_second.Size = new System.Drawing.Size(114, 17);
             this.ch_storage_second.TabIndex = 2;
             this.ch_storage_second.Text = "Дополнительный";
             this.ch_storage_second.UseVisualStyleBackColor = true;
@@ -337,7 +343,7 @@
             this.ch_storage_main.AutoSize = true;
             this.ch_storage_main.Location = new System.Drawing.Point(39, 58);
             this.ch_storage_main.Name = "ch_storage_main";
-            this.ch_storage_main.Size = new System.Drawing.Size(83, 20);
+            this.ch_storage_main.Size = new System.Drawing.Size(70, 17);
             this.ch_storage_main.TabIndex = 1;
             this.ch_storage_main.Text = "Главный";
             this.ch_storage_main.UseVisualStyleBackColor = true;
@@ -372,13 +378,31 @@
             this.btn_import.UseVisualStyleBackColor = true;
             this.btn_import.Click += new System.EventHandler(this.BtnImportClick);
             // 
-            // bgw
+            // bgw_download
             // 
-            this.bgw.WorkerReportsProgress = true;
-            this.bgw.WorkerSupportsCancellation = true;
-            this.bgw.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BgwDoWork);
-            this.bgw.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BgwProgressChanged);
-            this.bgw.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BgwRunWorkerCompleted);
+            this.bgw_download.WorkerReportsProgress = true;
+            this.bgw_download.WorkerSupportsCancellation = true;
+            this.bgw_download.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BgwDoWork);
+            this.bgw_download.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BgwProgressChanged);
+            this.bgw_download.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BgwRunWorkerCompleted);
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(25, 17);
+            this.toolStripStatusLabel2.Text = "      ";
+            // 
+            // lb_createreport
+            // 
+            this.lb_createreport.Name = "lb_createreport";
+            this.lb_createreport.Size = new System.Drawing.Size(142, 17);
+            this.lb_createreport.Text = "Формируется файл отчета";
+            this.lb_createreport.Visible = false;
+            // 
+            // bgw_report
+            // 
+            this.bgw_report.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgw_report_DoWork);
+            this.bgw_report.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgw_report_RunWorkerCompleted);
             // 
             // mainform
             // 
@@ -392,6 +416,7 @@
             this.Controls.Add(this.statusStrip1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -448,7 +473,10 @@
         private System.Windows.Forms.ToolStripProgressBar progress;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel lb_progress_text;
-        private System.ComponentModel.BackgroundWorker bgw;
+        private System.ComponentModel.BackgroundWorker bgw_download;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+        private System.Windows.Forms.ToolStripStatusLabel lb_createreport;
+        private System.ComponentModel.BackgroundWorker bgw_report;
     }
 }
 
